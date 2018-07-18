@@ -6,6 +6,7 @@ import android.databinding.DataBindingUtil;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.helper.ItemTouchHelper;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -18,28 +19,58 @@ import pg.autyzm.friendly_plans.ActivityProperties;
 import pg.autyzm.friendly_plans.App;
 import pg.autyzm.friendly_plans.R;
 import pg.autyzm.friendly_plans.databinding.FragmentPlanTaskListBinding;
+import pg.autyzm.friendly_plans.item_touch_helper.SimpleItemTouchHelperCallback;
 import pg.autyzm.friendly_plans.manager_app.view.plan_create_add_tasks.AddTasksToPlanFragment;
-import pg.autyzm.friendly_plans.manager_app.view.task_list.TaskRecyclerViewAdapter;
+import pg.autyzm.friendly_plans.notifications.ToastUserNotifier;
 
 public class PlanTaskListFragment extends Fragment implements PlanTaskListEvents {
 
-    private TaskRecyclerViewAdapter taskListAdapter;
+    private PlanCreateTaskListRecyclerViewAdapter taskListAdapter;
     private Long planId;
 
     @Inject
     PlanTemplateRepository planTemplateRepository;
+    @Inject
+    ToastUserNotifier toastUserNotifier;
 
-    TaskRecyclerViewAdapter.TaskItemClickListener taskItemClickListener =
-            new TaskRecyclerViewAdapter.TaskItemClickListener() {
+    PlanCreateTaskListRecyclerViewAdapter.TaskItemClickListener taskItemClickListener =
+            new PlanCreateTaskListRecyclerViewAdapter.TaskItemClickListener() {
+
+                private boolean removedTask = false;
+
                 @Override
-                public void onTaskItemClick(int position) {
-                    /* What to do after click? Remove task? Edit? */
+                public void onRemoveTaskClick(long itemId) {
+//                    taskTemplateRepository.delete(itemId);
+//                    stepListRecyclerViewAdapter
+//                            .setStepItemListItems(stepTemplateRepository.getAll(task_id));
+                    toastUserNotifier.displayNotifications(
+                            R.string.step_removed_message,
+                            getActivity().getApplicationContext());
+                    removedTask = true;
                 }
 
                 @Override
-                public void onRemoveTaskClick(int position){
-                    /*Item remove TODO*/
+                public void onMoveItem() {
+//                    Boolean reordered = false;
+//                    for(int i = 0; i < taskListAdapter.getItemCount(); i++){
+//                        TaskTemplate stepItem =  stepListRecyclerViewAdapter.getStepTemplate(i);
+//                        if(i != stepItem.getOrder()) {
+//                            stepTemplateRepository.update(stepItem.getId(), stepItem.getName(), i, stepItem.getPictureId(), stepItem.getSoundId(), stepItem.getTaskTemplateId());
+//                            reordered = true;
+//                        }
+//                        if(!removedStep && reordered){
+                            toastUserNotifier.displayNotifications(
+                                    R.string.steps_reordered_message,
+                                    getActivity().getApplicationContext());
+//                        }
+//                    }
                 }
+
+                @Override
+                public void onShowTaskClick(long itemId) {
+
+                }
+
             };
 
     @Override
@@ -81,11 +112,16 @@ public class PlanTaskListFragment extends Fragment implements PlanTaskListEvents
         recyclerView.setHasFixedSize(true);
         recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
 
-        taskListAdapter = new TaskRecyclerViewAdapter(taskItemClickListener);
+        taskListAdapter = new PlanCreateTaskListRecyclerViewAdapter(taskItemClickListener);
         recyclerView.setAdapter(taskListAdapter);
 
         PlanTemplate planTemplate = planTemplateRepository.get(planId);
         taskListAdapter.setTaskItems(planTemplate.getTasksWithThisPlan());
+
+
+        ItemTouchHelper.Callback callback = new SimpleItemTouchHelperCallback(taskListAdapter);
+        ItemTouchHelper mItemTouchHelper = new ItemTouchHelper(callback);
+        mItemTouchHelper.attachToRecyclerView(recyclerView);
     }
 
     public void onResume() {
