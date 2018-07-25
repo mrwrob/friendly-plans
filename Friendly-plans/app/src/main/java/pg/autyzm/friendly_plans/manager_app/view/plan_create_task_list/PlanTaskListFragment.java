@@ -40,9 +40,10 @@ public class PlanTaskListFragment extends Fragment implements PlanTaskListEvents
 
                 @Override
                 public void onRemoveTaskClick(long itemId) {
-//                    taskTemplateRepository.delete(itemId);
-//                    stepListRecyclerViewAdapter
-//                            .setStepItemListItems(stepTemplateRepository.getAll(task_id));
+                    planTemplateRepository.removeTaskFromPlan(planId, itemId);
+                    PlanTemplate planTemplate = planTemplateRepository.get(planId);
+                    taskListAdapter
+                            .setTaskItems(planTemplate.getTasksWithThisPlan());
                     toastUserNotifier.displayNotifications(
                             R.string.step_removed_message,
                             getActivity().getApplicationContext());

@@ -31,7 +31,7 @@ public class PlanTemplateRepository {
     }
 
 
-    public void setTasksWithThisPlan(Long planId, Long taskId) {
+    public void setTaskWithPlan(Long planId, Long taskId) {
         PlanTaskTemplate planTaskTemplate = new PlanTaskTemplate();
         planTaskTemplate.setTaskTemplateId(taskId);
         planTaskTemplate.setPlanTemplateId(planId);
@@ -40,6 +40,18 @@ public class PlanTemplateRepository {
         targetDao.insert(planTaskTemplate);
 
         get(planId).resetTasksWithThisPlan();
+    }
+
+    public void removeTaskFromPlan(Long planId, Long taskId) {
+        PlanTemplate planTemplate = daoSession.getPlanTemplateDao().load(planId);
+        List<PlanTaskTemplate> planTaskTemplatesList = planTemplate.getPlanTaskTemplates();
+        PlanTaskTemplateDao targetDao = daoSession.getPlanTaskTemplateDao();
+        for(PlanTaskTemplate planTaskTemplate : planTaskTemplatesList){
+            if(planTaskTemplate.getTaskTemplateId() == taskId){
+                targetDao.delete(planTaskTemplate);
+            }
+        }
+        planTemplate.resetTasksWithThisPlan();
     }
 
     public PlanTemplate get(Long id) {

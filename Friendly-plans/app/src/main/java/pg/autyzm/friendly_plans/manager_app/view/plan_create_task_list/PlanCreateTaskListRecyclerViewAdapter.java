@@ -84,6 +84,8 @@ public class PlanCreateTaskListRecyclerViewAdapter extends
             TaskTemplate taskTemplate = taskItemList.get(position);
             parent.taskName.setText(taskTemplate.getName());
             setPicture(parent, taskTemplate);
+            setSound(parent, taskTemplate);
+            setDurationTime(parent, taskTemplate);
         }
     }
 
